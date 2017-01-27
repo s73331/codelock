@@ -4,6 +4,7 @@ import java.awt.Button;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Frame;
+import java.awt.GridLayout;
 import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,11 +13,22 @@ import java.awt.event.WindowEvent;
 
 @SuppressWarnings("serial")
 public class Door extends Panel {
-	private class ButtonResetter implements Runnable {
+	private class ButtonBackgroundSetter implements Runnable {
 		private Button button;
+		private Color color;
 
-		public ButtonResetter(Button button) {
+		public ButtonBackgroundSetter(Button button, Color color, int span) {
+			if (button == null) {
+				throw new IllegalArgumentException("button must not be null");
+			}
+			if (color == null) {
+				throw new IllegalArgumentException("color must not be null");
+			}
+			if (span < 1) {
+				throw new IllegalArgumentException("span must be greater than 1");
+			}
 			this.button = button;
+			this.color = color;
 		}
 
 		public void run() {
@@ -27,13 +39,14 @@ public class Door extends Panel {
 			}
 			EventQueue.invokeLater(new Runnable() {
 				public void run() {
-					button.setBackground(buttonDefault);
+					button.setBackground(color);
 				}
 			});
 		}
 	}
-	
-	private static Color buttonDefault;
+
+	private static final Color defaultColor = Color.WHITE;
+	private static final String[] signs = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "" };
 
 	private static void printUsage() {
 		System.err.println("usage: java Door $code");
@@ -53,7 +66,8 @@ public class Door extends Panel {
 					redButton.setBackground(Color.RED);
 					changedButton = redButton;
 				}
-				new Thread(new ButtonResetter(changedButton)).start();
+				input = "";
+				new Thread(new ButtonBackgroundSetter(changedButton, defaultColor, 2000)).start();
 			}
 		}
 	};
@@ -71,22 +85,22 @@ public class Door extends Panel {
 		}
 		this.code = code;
 		for (int i = 0; i < 12; i++) {
-			Button b = new Button();
-			if (i < 10) {
-				b.setLabel(Integer.toString(i));
+			setLayout(new GridLayout(4, 3));
+			Button b = new Button(signs[i]);
+			if (i < 9 || i == 10) {
 				b.addActionListener(al);
-			} else if (i == 10) {
+			} else if (i == 9) {
 				greenButton = b;
 			} else if (i == 11) {
 				redButton = b;
-				buttonDefault = b.getBackground();
 			}
+			b.setBackground(defaultColor);
 			add(b);
 		}
 	}
 
 	public static void main(String[] args) {
-		if ("".equals(args) || args.length != 1) {
+		if (args == null || args.length != 1) {
 			System.err.println("error: wrong args");
 			printUsage();
 			return;
