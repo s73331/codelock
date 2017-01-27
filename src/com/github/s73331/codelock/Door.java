@@ -13,7 +13,7 @@ import java.awt.event.WindowEvent;
 
 @SuppressWarnings("serial")
 public class Door extends Panel {
-	private class ButtonBackgroundSetter implements Runnable {
+	protected class ButtonBackgroundSetter implements Runnable {
 		private Button button;
 		private Color color;
 
@@ -45,21 +45,13 @@ public class Door extends Panel {
 		}
 	}
 
-	private static final Color defaultColor = Color.WHITE;
-	private static final String[] signs = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "" };
-
-	private static void printUsage() {
-		System.err.println("usage: java Door $code");
-		System.err.println("e.g. : java Door 1234");
-	}
-
-	private ActionListener al = new ActionListener() {
+	private class DoorActionListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			input += e.getActionCommand();
 			if (code.length() == input.length()) {
 				Button changedButton;
-				if (code.equals(input)) {
+				if (checkCode()) {
 					greenButton.setBackground(Color.GREEN);
 					changedButton = greenButton;
 				} else {
@@ -70,13 +62,27 @@ public class Door extends Panel {
 				new Thread(new ButtonBackgroundSetter(changedButton, defaultColor, 2000)).start();
 			}
 		}
-	};
-	private String code;
-	private String input = "";
-	private Button greenButton;
-	private Button redButton;
+	}
+
+	private static final String[] signs = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "" };
+
+	protected static final Color defaultColor = Color.WHITE;
+
+	protected static void printUsage() {
+		System.err.println("usage: java Door $code");
+		System.err.println("e.g. : java Door 1234");
+	}
+
+	protected String code;
+	protected String input = "";
+	protected Button greenButton;
+	protected Button redButton;
+
+	protected Door() {		
+	}
 
 	public Door(String code) {
+		makeLayout(new DoorActionListener());
 		if (code == null) {
 			throw new IllegalArgumentException("code must not be null");
 		}
@@ -84,11 +90,14 @@ public class Door extends Panel {
 			throw new IllegalArgumentException("code must only contain digits");
 		}
 		this.code = code;
+	}
+	
+	protected void makeLayout(ActionListener listener){
 		for (int i = 0; i < 12; i++) {
 			setLayout(new GridLayout(4, 3));
 			Button b = new Button(signs[i]);
 			if (i < 9 || i == 10) {
-				b.addActionListener(al);
+				b.addActionListener(listener);
 			} else if (i == 9) {
 				greenButton = b;
 			} else if (i == 11) {
@@ -99,25 +108,41 @@ public class Door extends Panel {
 		}
 	}
 
+	protected boolean shouldCheckCode() {
+		return code.length() == input.length();
+	}
+
+	protected boolean checkCode() {
+		return code.equals(input);
+	}
+
+	public static Door createDoorWindow(String code) {
+		Door door;
+		try {
+			door = new Door(code);
+		} catch (IllegalArgumentException iae) {
+			System.err.println("error: IllegalArgumentException: " + iae);
+			return null;
+		}
+		Frame f = new Frame();
+		f.add(door);
+		f.addWindowListener(new WindowAdapter() {
+			public void windowClosing(final WindowEvent e) {
+				System.exit(0);
+			}
+		});
+		f.setSize(1000, 1000);
+		f.setVisible(true);
+		return door;
+	}
+
 	public static void main(String[] args) {
 		if (args == null || args.length != 1) {
 			System.err.println("error: wrong args");
 			printUsage();
 			return;
 		}
-		try {
-			Panel p = new Door(args[0]);
-			Frame f = new Frame();
-			f.add(p);
-			f.addWindowListener(new WindowAdapter() {
-				public void windowClosing(final WindowEvent e) {
-					System.exit(0);
-				}
-			});
-			f.setSize(1000, 1000);
-			f.setVisible(true);
-		} catch (IllegalArgumentException iae) {
-			System.err.println("error: IllegalArgumentException: " + iae);
+		if (createDoorWindow(args[0]) == null) {
 			printUsage();
 		}
 	}

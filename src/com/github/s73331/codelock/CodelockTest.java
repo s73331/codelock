@@ -47,56 +47,40 @@ public class CodelockTest {
 
 	@Test
 	public void testMainNull() {
-		try {
-			Door.main(null);
-		} catch (Exception e) {
-			fail("Door.main throws Exception when args is null");
-		}
+		Door.main(null);
 	}
 
 	@Test
 	public void testMainEmptyArgs() {
-		try {
-			Door.main(new String[0]);
-		} catch (Exception e) {
-			fail("Door.main throws Exception when args is empty array");
-		}
+		Door.main(new String[0]);
 	}
 
 	@Test
 	public void testMainMultipleArgs() {
-		for (int i = 0; i < 100; i++)
-			try {
-				Door.main(new String[i]);
-			} catch (Exception e) {
-				fail("Door.main throws Exception when args is array of length " + i);
-			}
+		for (int i = 0; i < 100; i++) {
+			Door.main(new String[i]);
+		}
 	}
 
 	@Test
 	public void testMainNullString() {
-		try {
-			Door.main(new String[] { null });
-		} catch (Exception e) {
-			fail("Door.main throws Exception when args[0] is null");
-		}
+		Door.main(new String[] { null });
 	}
 
 	@Test
 	public void testMainEmptyString() {
-		try {
-			Door.main(new String[] { "" });
-		} catch (Exception e) {
-			fail("Door.main throws Exception when args[0] is empty string");
-		}
+		Door.main(new String[] { "" });
 	}
 
 	@Test
 	public void testMainAlphanumericalString() {
-		try {
-			Door.main(new String[] { "0xff" });
-		} catch (Exception e) {
-			fail("Door.main throws Exception when args[0] is 0xff");
+		Door.main(new String[] { "0xff" });
+	}
+
+	@Test
+	public void testPrintUsage() {
+		for (int i = 0; i < 1000; i++) {
+			Door.printUsage();
 		}
 	}
 
